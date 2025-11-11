@@ -12,9 +12,9 @@ const produto = {
   desconto: 34,
   cores: ["Sortidos"],
   imagens: [
-    "https://via.placeholder.com/300x300?text=Imagem+1",
-    "https://via.placeholder.com/300x300?text=Imagem+2",
-    "https://via.placeholder.com/300x300?text=Imagem+3"
+    "https://placehold.co/400?text=Imagem+1",
+    "https://placehold.co/400?text=Imagem+2",
+    "https://placehold.co/400?text=Imagem+3"
   ]
 };
 

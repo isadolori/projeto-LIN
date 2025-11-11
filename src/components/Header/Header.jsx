@@ -1,5 +1,5 @@
 import React from 'react'
-import SearchBar from "../SeachBar/SearchBar";
+import SearchBar from "../SearchBar/SearchBar";
 import { Link } from 'react-router-dom'
 
 const Header = () => {
@@ -25,12 +25,13 @@ const Header = () => {
             />
           </div>
 
-          {/* Barra de pesquisa */}
+          {/* Barra de pesquisa 
           <div className="col-12 col-md-6 d-flex justify-content-center mb-2 mb-md-0">
             <div className="w-100" style={{ maxWidth: 600 }}>
               <SearchBar />
             </div>
           </div>
+          */}
 
           {/* Login */}
           <div className="col-12 col-md-3 d-flex justify-content-center justify-content-md-end">

@@ -1,15 +1,20 @@
+import React, { useState } from 'react'; 
 import Header from '../../components/Header/Header.jsx'
-import Card from '../../components/Card/Card.jsx'
-import Body from '../../components/Body/Body.jsx'
+import Body from '../../components/Body/Body.jsx' 
+// import CardContainer from '../../components/CardContainer/CardContainer.jsx'
 
 function Home() {
+  const [searchTerm, setSearchTerm] = useState(''); 
 
   return (
     <>
     
     <Header/>
     
-    <Body/>
+    <Body 
+        searchTerm={searchTerm} 
+        setSearchTerm={setSearchTerm}
+    />
     </>
   )
 }

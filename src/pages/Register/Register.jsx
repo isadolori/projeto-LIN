@@ -1,6 +1,68 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
+  const [nome, setNome] = useState('');
+  const [sobrenome, setSobrenome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState(''); 
+  const [cpf, setCpf] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [cep, setCep] = useState('');
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [complemento, setComplemento] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    const dadosCadastro = {
+      nome: `${nome} ${sobrenome}`,
+      email: email,
+      senha: senha,
+      cpf: cpf,
+      telefone: telefone,
+      cep: cep,
+      logradouro: logradouro,
+      numero: numero,
+      bairro: bairro,
+      cidade: cidade,
+      uf: uf,
+      complemento: complemento
+    };
+
+    try {
+      const response = await fetch('http://localhost:3001/registro-completo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dadosCadastro),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro desconhecido');
+      }
+      alert('Cadastro realizado com sucesso!');
+      navigate('/login'); 
+
+    } catch (err) {
+      console.error('Falha no cadastro:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-start mt-5 mb-5">
       {/* Card com largura controlada */}

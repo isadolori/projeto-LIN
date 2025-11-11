@@ -1,13 +1,23 @@
-import React from "react";
-import { Link } from 'react-router-dom'
-const CardContainer = () => {
-  const produtos = [
-    { id: 1, nome: "Camisa Azul", categoria: "Blusa", cor: "Preta", tamanho: "M", quantidade: 98, imagem: "/produtos/camisa-azul.jpg", preco: 59.7 },
-    { id: 2, nome: "Calça Jeans", categoria: "Calça", cor: "Azul", tamanho: "M", quantidade: 75, imagem: "/produtos/calca-jeans.jpg", preco: 89.9 },
-    { id: 3, nome: "Camisa Verde", categoria: "Blusa", cor: "Verde", tamanho: "G", quantidade: 43, imagem: "/produtos/camisa-verde.jpg", preco: 64.5 },
-    { id: 4, nome: "Camiseta Básica", categoria: "Blusa", cor: "Branca", tamanho: "M", quantidade: 120, imagem: "/produtos/camiseta-branca.jpg", preco: 49.9 },
-    { id: 5, nome: "Jaqueta Jeans", categoria: "Casaco", cor: "Azul", tamanho: "G", quantidade: 60, imagem: "/produtos/jaqueta-jeans.jpg", preco: 159.9 },
-  ];
+import React, { useState, useEffect } from "react"; 
+import { Link } from "react-router-dom";
+
+const CardContainer = ({ searchTerm }) => { 
+  const [produtos, setProdutos] = useState([]);
+  
+  useEffect(() => {
+    const url = searchTerm 
+      ? `http://localhost:3001/produtos?q=${encodeURIComponent(searchTerm)}`
+      : 'http://localhost:3001/produtos';
+      
+    fetch(url) 
+      .then(response => response.json())
+      .then(data => {
+        setProdutos(data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar produtos:', error);
+      });
+  }, [searchTerm]); 
 
   return (
     <section
@@ -24,7 +34,7 @@ const CardContainer = () => {
 
         <div className="row g-4">
           {produtos.map((item) => (
-            <div key={item.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div key={item.id_produto} className="col-12 col-sm-6 col-md-4 col-lg-3">
               <div
                 className="card h-100 border-0 shadow-sm"
                 style={{
@@ -41,9 +51,9 @@ const CardContainer = () => {
                 }}
               >
                 <img
-                  src={item.imagem || "https://via.placeholder.com/300x300?text=Sem+Imagem"}
+                  src={item.caminho_imagem || "https://placehold.co/400g"} 
                   className="card-img-top"
-                  alt={item.nome}
+                  alt={item.nome_produto}
                   style={{
                     objectFit: "cover",
                     height: "240px",
@@ -53,11 +63,15 @@ const CardContainer = () => {
                 />
 
                 <div className="card-body text-center">
-                  <h5 className="card-title fw-semibold text-dark">{item.nome}</h5>
+                  <h5 className="card-title fw-semibold text-dark">{item.nome_produto}</h5>
                   <p className="text-primary fw-bold fs-5 mb-3">
-                    R$ {item.preco.toFixed(2).replace(".", ",")}
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    }).format(item.preco_produto)}
                   </p>
-                    <Link to={'/product-details'} className="btn btn-outline-primary w-100 fw-semibold">Ver Detalhes</Link>
+                  
+                  <Link to={'/product-details'} className="btn btn-outline-primary w-100 fw-semibold">Ver Detalhes</Link>
                 </div>
               </div>
             </div>
