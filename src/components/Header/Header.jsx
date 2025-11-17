@@ -50,7 +50,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Navbar inferior */}
+      {/* Navbar inferior 
       <nav 
         className="navbar navbar-expand-lg navbar-light bg-white border-top border-bottom"
       >
@@ -60,6 +60,8 @@ const Header = () => {
           <a className="nav-link px-4 fw-semibold text-dark" href="#">Infantil</a>
         </div>
       </nav>
+      */}
+      
     </header>
   );
 }

@@ -11,9 +11,9 @@ const Body = ({ searchTerm, setSearchTerm }) => {
     
     <>
 
-    <SearchBar setSearchTerm={setSearchTerm} /> 
-
     <BannerPromocaoDia/>
+    
+    <SearchBar setSearchTerm={setSearchTerm} /> 
      
     <CardContainer searchTerm={searchTerm} />
     
