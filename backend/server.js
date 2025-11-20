@@ -200,6 +200,113 @@ app.put('/produtos/:id/estoque', (req, res) => {
   });
 });
 
+// Endpoint para criar pedido (cria tabelas no dev se estiverem faltando e retorna mensagens de erro mais detalhadas)
+app.post('/pedidos', (req, res) => {
+  const { id_cliente, total, items } = req.body;
+  if (!id_cliente || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'Dados de pedido inválidos' });
+  }
+
+  // As operações abaixo são síncronas em callbacks via `connection`
+  // Create tables if missing — useful during development to surface schema issues.
+  const createPedidoTable = `
+    CREATE TABLE IF NOT EXISTS pedido (
+      id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+      id_cliente INT NOT NULL,
+      total_pedido DECIMAL(10,2) NOT NULL,
+      data_pedido DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;
+  `;
+  const createPedidoItemTable = `
+    CREATE TABLE IF NOT EXISTS pedido_item (
+      id_item INT AUTO_INCREMENT PRIMARY KEY,
+      id_pedido INT NOT NULL,
+      id_produto INT NOT NULL,
+      quantidade INT NOT NULL,
+      preco_unitario DECIMAL(10,2) NOT NULL,
+      FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido) ON DELETE CASCADE
+    ) ENGINE=InnoDB;
+  `;
+
+  connection.query(createPedidoTable, (err) => {
+    if (err) {
+      console.error('Erro ao garantir tabela pedido:', err);
+      return res.status(500).json({ error: err.message || 'Erro ao preparar banco' });
+    }
+    connection.query(createPedidoItemTable, (err) => {
+      if (err) {
+        console.error('Erro ao garantir tabela pedido_item:', err);
+        return res.status(500).json({ error: err.message || 'Erro ao preparar banco' });
+      }
+
+      // Agora a transação de inserção
+      connection.beginTransaction((err) => {
+        if (err) {
+          console.error('Erro ao iniciar transação de pedido:', err);
+          return res.status(500).json({ error: err.message || 'Erro interno' });
+        }
+
+        const insertPedido = `INSERT INTO pedido (id_cliente, total_pedido, data_pedido) VALUES (?, ?, NOW())`;
+        connection.query(insertPedido, [id_cliente, total], (err, resultPedido) => {
+          if (err) {
+            return connection.rollback(() => {
+              console.error('Erro ao inserir pedido:', err);
+              return res.status(500).json({ error: err.message || 'Erro ao criar pedido' });
+            });
+          }
+
+          const idPedido = resultPedido.insertId;
+          const insertItem = `INSERT INTO pedido_item (id_pedido, id_produto, quantidade, preco_unitario) VALUES ?`;
+          const values = items.map(it => [idPedido, it.id_produto, it.quantidade, it.preco_unitario]);
+
+          connection.query(insertItem, [values], (err, resultItems) => {
+            if (err) {
+              return connection.rollback(() => {
+                console.error('Erro ao inserir itens do pedido:', err);
+                return res.status(500).json({ error: err.message || 'Erro ao criar itens do pedido' });
+              });
+            }
+
+            connection.commit((err) => {
+              if (err) {
+                return connection.rollback(() => {
+                  console.error('Erro ao confirmar transação do pedido:', err);
+                  return res.status(500).json({ error: err.message || 'Erro ao finalizar pedido' });
+                });
+              }
+              return res.status(201).json({ message: 'Pedido criado', idPedido });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor backend rodando na porta ${PORT}`);
+});
+
+// GET produto por id
+app.get('/produtos/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = `
+    SELECT p.*, (
+      SELECT ip.caminho_imagem
+      FROM imagem_produto ip
+      WHERE ip.id_produto = p.id_produto
+      LIMIT 1
+    ) AS caminho_imagem
+    FROM produto p
+    WHERE p.id_produto = ?
+    LIMIT 1
+  `;
+  connection.query(sql, [id], (err, rows) => {
+    if (err) {
+      console.error('Erro ao buscar produto por id:', err);
+      return res.status(500).json({ error: err.message || 'Erro interno' });
+    }
+    if (!rows || rows.length === 0) return res.status(404).json({ error: 'Produto não encontrado' });
+    return res.json(rows[0]);
+  });
 });

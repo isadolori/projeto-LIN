@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export default function RegisterStep2(){
   const location = useLocation();
   const navigate = useNavigate();
-  const firstStepData = location.state?.firstStepData || null;
+  const firstStepData = location.state?.firstStepData || JSON.parse(localStorage.getItem('registerStep1') || 'null');
 
   const [cpf, setCpf] = useState('');
   const [cep, setCep] = useState('');
@@ -20,8 +20,8 @@ export default function RegisterStep2(){
 
   useEffect(() => {
     if (!firstStepData) {
-      // If user landed here directly, send back to first step
       navigate('/register');
+      return;
     }
   }, [firstStepData, navigate]);
 
@@ -29,7 +29,6 @@ export default function RegisterStep2(){
     e.preventDefault();
     setError(null);
 
-    // Required checks mirrored from backend
     if (!firstStepData?.nome || !cpf || !firstStepData?.email || !firstStepData?.senha || !cep || !logradouro || !numero || !bairro || !cidade || !uf) {
       setError('Preencha todos os campos obrigatórios.');
       return;
@@ -60,7 +59,7 @@ export default function RegisterStep2(){
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro no servidor');
 
-      // on success, navigate to login (or wherever appropriate)
+      try { localStorage.removeItem('registerStep1'); } catch(e) {}
       navigate('/login', { replace: true });
     } catch (err) {
       console.error('Erro no registro completo:', err);

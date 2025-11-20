@@ -30,7 +30,8 @@ export default function RegisterStep1(){
       telefone
     };
 
-    // navigate to step 2 carrying the first-step data
+    try { localStorage.setItem('registerStep1', JSON.stringify(firstStepData)); } catch (e) { /* ignore */ }
+
     navigate('/register/address', { state: { firstStepData } });
   };
 
